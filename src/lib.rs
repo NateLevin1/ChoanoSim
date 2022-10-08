@@ -45,13 +45,7 @@ pub fn simulate_step() {
 
 #[wasm_bindgen]
 pub fn set_food_density(density: u32) {
-    let food_density = if density == 999999 {
-        simulator::FoodDensity::Infinite
-    } else {
-        simulator::FoodDensity::Value(density)
-    };
-
-    get_simulator().get_config_mut().food_density = food_density;
+    get_simulator().get_config_mut().food_density = density;
     
     console::log_2(&JsValue::from_str("Set food density to %d"), &density.into());
 }
