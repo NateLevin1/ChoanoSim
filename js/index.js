@@ -5,8 +5,9 @@ let isPlaying = false;
 let steps = 0;
 let rustSimulator = null;
 let context;
+const simWidth = 1000;
 let camera = {
-    x: window.innerWidth / 2 - 400,
+    x: window.innerWidth / 2 - simWidth / 2,
     y: 20,
     zoom: 1,
 };

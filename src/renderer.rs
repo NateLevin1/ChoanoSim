@@ -49,7 +49,7 @@ pub fn render_simulator(context: CanvasRenderingContext2d, camera_x: i32, camera
         context.save();
         context.begin_path();
         context.translate(x, y).unwrap();
-        context.rotate(3.14 * cell.direction / 180.0).unwrap();
+        context.rotate(cell.radians - 3.14).unwrap();
         context.arc(0.0, 0.0, size, 0.2 * 3.14, 1.8 * 3.14).unwrap();
         context.translate(0.0, -size * 1.0 / 2.0).unwrap();
         context.line_to(size+7.0, 0.0);

@@ -49,12 +49,16 @@ impl Simulator {
         } else {
             self.add_food();
         }
+
+        for cell in &mut self.cells {
+            cell.simulate_step(&self.config);
+        }
     }
     fn add_food(&mut self) {
         let width = self.config.width;
         let height = self.config.height;
         let food_spacing = self.config.food_spacing;
-        let food_offset = 10;
+        let food_offset = food_spacing;
         
         for row in 0..width/food_spacing {
             let food_row = self.food.get_mut(row as usize);
@@ -90,9 +94,9 @@ impl SimulatorConfig {
         Self {
             reproduction: Reproduction::default(),
             food_density: FoodDensity::Value(5),
-            width: 800,
+            width: 1_000,
             height: 800,
-            cell_number: 10,
+            cell_number: 20,
             food_spacing: 100
         }
     }
