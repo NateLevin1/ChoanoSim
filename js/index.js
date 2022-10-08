@@ -6,7 +6,7 @@ let steps = 0;
 let rustSimulator = null;
 let context;
 let camera = {
-    x: 100,
+    x: window.innerWidth / 2 - 400,
     y: 20,
     zoom: 1,
 };

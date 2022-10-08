@@ -22,10 +22,21 @@ pub fn render_simulator(context: CanvasRenderingContext2d, camera_x: i32, camera
 
     let simulator = get_simulator();
     
-    // draw outline
-    context.set_stroke_style(&"rgb(255, 255, 255)".into());
-    context.set_line_width(2.0);
-    context.stroke_rect(camera_x as f64, camera_y as f64, simulator.get_config().width as f64, simulator.get_config().height as f64);
+    // draw food
+    context.set_fill_style(&"rgba(58, 29, 0, 0.5)".into());
+    for food_row in simulator.get_food() {
+        for food in food_row {
+            let x = (food.x as i32 + camera_x) as f64;
+            let y = (food.y as i32 + camera_y) as f64;
+            let size = 2.5;
+            context.save();
+            context.begin_path();
+            context.arc(x, y, size, 0.0, 2.0 * 3.14).unwrap();
+            context.fill();
+            context.close_path();
+            context.restore();
+        }
+    }
     
     // draw cells
     context.set_stroke_style(&"rgb(100, 255, 255)".into());
@@ -51,7 +62,6 @@ pub fn render_simulator(context: CanvasRenderingContext2d, camera_x: i32, camera
         context.close_path();
         context.restore();
 
-        context.save();
         context.set_stroke_style(&"rgb(50, 200, 255)".into());
         context.set_line_width(3.0);
         context.begin_path();
@@ -63,4 +73,9 @@ pub fn render_simulator(context: CanvasRenderingContext2d, camera_x: i32, camera
         context.close_path();
         context.restore();
     }
+
+    // draw outline
+    context.set_stroke_style(&"rgb(255, 255, 255)".into());
+    context.set_line_width(2.0);
+    context.stroke_rect(camera_x as f64, camera_y as f64, simulator.get_config().width as f64, simulator.get_config().height as f64);
 }
