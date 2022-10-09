@@ -40,7 +40,7 @@ fn get_simulator() -> MutexGuard<'static, simulator::Simulator> {
 pub fn simulate_step() {
     let mut simulator = get_simulator();
     simulator.simulate_step();
-    console::log_2(&JsValue::from_str("Simulated step %d"), &simulator.get_steps().into());
+    // console::log_2(&JsValue::from_str("Simulated step %d"), &simulator.get_steps().into());
 }
 
 #[wasm_bindgen]

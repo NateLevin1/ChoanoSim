@@ -45,6 +45,8 @@
 
 #time {
     font-variant-numeric: tabular-nums;
+    min-width: 10ch;
+    text-align: center;
 }
 
 .sim-conf {

@@ -19,9 +19,10 @@ pub struct Cell {
 
 impl Cell {
     pub fn new(config: &SimulatorConfig) -> Self {
+        let dist_from_wall = config.food_spacing;
         Self {
-            x: random(config.width),
-            y: random(config.height),
+            x: dist_from_wall + random(config.width - dist_from_wall),
+            y: dist_from_wall + random(config.height - dist_from_wall),
             radians: (random(360) as f64).to_radians(),
             stomach_amount: 5.0,
             rotation_chance: 0.0,
@@ -47,11 +48,12 @@ impl Cell {
 
         let dx = self.radians.cos() * self.speed;
         let dy = self.radians.sin() * self.speed;
+        let dist_from_wall = config.food_spacing as i32 / 2i32;
 
         self.rotation_chance += DEFAULT_ROTATION_CHANCE_CHANGE;
 
         let new_x = self.x as i32 + dx as i32;
-        if new_x >= 0 && new_x < config.width as i32 {
+        if new_x >= dist_from_wall && new_x < config.width as i32 - dist_from_wall {
             self.x = new_x as u32;
         } else {
             // self.rotation_chance += ROTATION_CHANCE_CHANGE_ON_WALL_HIT;
@@ -59,7 +61,7 @@ impl Cell {
         }
         
         let new_y = self.y as i32 + dy as i32;
-        if new_y >= 0 && new_y < config.height as i32 {
+        if new_y >= dist_from_wall && new_y < config.height as i32 - dist_from_wall {
             self.y = new_y as u32;
         } else {
             // self.rotation_chance += ROTATION_CHANCE_CHANGE_ON_WALL_HIT;
@@ -103,5 +105,5 @@ impl Cell {
 
 const DEFAULT_ROTATION_CHANCE_CHANGE: f64 = 0.0006;
 // const ROTATION_CHANCE_CHANGE_ON_WALL_HIT: f64 = 0.3;
-const FOOD_STOMACH_INCREASE_AMOUNT: f64 = 2.5;
-const FOOD_STOMACH_DECREASE_AMOUNT: f64 = 0.007;
+const FOOD_STOMACH_INCREASE_AMOUNT: f64 = 0.5;
+const FOOD_STOMACH_DECREASE_AMOUNT: f64 = 0.009;
