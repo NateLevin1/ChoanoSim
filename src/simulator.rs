@@ -122,7 +122,7 @@ impl SimulatorConfig {
             width: 800,
             height: 800,
             cell_number: 10,
-            food_spacing: 100
+            food_spacing: 80
         }
     }
 }

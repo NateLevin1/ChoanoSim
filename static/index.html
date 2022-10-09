@@ -19,18 +19,25 @@
     <div id="inspector"></div>
     <details class="sim-conf">
       <summary>Configure Simulator</summary>
-      <div>
-        <input type="radio" id="asexual" name="reproduction" value="asexual" checked>
-        <label for="asexual">Asexual Reproduction</label><br>
-        <input type="radio" id="sexual" name="reproduction" value="sexual">
-        <label for="sexual">Sexual Reproduction</label><br>
-        <label for="food-density">Food Density:</label>
-        <select id="food-density">
-          <option value="300">Scarce (every 300s)</option>
-          <option value="150" selected>Present (every 150s)</option>
-          <option value="50">Abundant (every 50s)</option>
-          <option value="1">Infinite (every step)</option>
-        </select>
+      <div class="conf-container">
+        <div>
+          <input type="radio" id="asexual" name="reproduction" value="asexual" checked>
+          <label for="asexual">Asexual Reproduction</label><br>
+          <input type="radio" id="sexual" name="reproduction" value="sexual">
+          <label for="sexual">Sexual Reproduction</label><br>
+          <label for="food-density">Food Density:</label>
+          <select id="food-density">
+            <option value="300">Scarce (every 300s)</option>
+            <option value="150" selected>Present (every 150s)</option>
+            <option value="50">Abundant (every 50s)</option>
+            <option value="1">Infinite (every step)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="step-multiplier" id="step-multiplier-label">Step Multiplier: 1</label>
+          <input type="range" name="step-multiplier" id="step-multiplier" min="1" max="100" value="1">
+        </div>
       </div>
     </details>
   </div>

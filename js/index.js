@@ -11,10 +11,13 @@ let camera = {
     y: 20,
     zoom: 1,
 };
+let stepMultiplier = 1;
 
 function runStep(rustModule) {
     updateTime();
-    rustModule.simulate_step(rustSimulator);
+    for (var i = 0; i < stepMultiplier; i++) {
+        rustModule.simulate_step(rustSimulator);
+    }
     rustModule.render_simulator(context, camera.x, camera.y);
     if (isPlaying) {
         requestAnimationFrame(() => runStep(rustModule));
@@ -22,10 +25,10 @@ function runStep(rustModule) {
 }
 
 function updateTime() {
-    steps++;
-    document.getElementById("time").textContent = `${steps} step${
-        steps > 1 ? "s" : ""
-    }`;
+    steps += stepMultiplier;
+    document.getElementById(
+        "time"
+    ).textContent = `${steps.toLocaleString()} step${steps > 1 ? "s" : ""}`;
 }
 
 function init(rustModule) {
@@ -44,6 +47,10 @@ function init(rustModule) {
         document.querySelectorAll("input[name=reproduction]")
     );
     const foodDensity = document.getElementById("food-density");
+    const stepMultiplierEl = document.getElementById("step-multiplier");
+    const stepMultiplierLabelEl = document.getElementById(
+        "step-multiplier-label"
+    );
 
     // play/step
     step.onclick = () => {
@@ -74,6 +81,10 @@ function init(rustModule) {
             rustModule.set_reproductive_method(newRepro);
         };
     });
+    stepMultiplierEl.oninput = (_event) => {
+        stepMultiplier = Math.pow(stepMultiplierEl.valueAsNumber, 2);
+        stepMultiplierLabelEl.textContent = `Step Multiplier: ${stepMultiplier.toLocaleString()}`;
+    };
 
     // renderer
     window.onkeydown = (event) => {

@@ -59,3 +59,11 @@
 .sim-conf div * {
     margin: 0.3rem 0;
 }
+
+.conf-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+#step-multiplier {
+    display: block;
+}
