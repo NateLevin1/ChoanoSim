@@ -70,7 +70,7 @@ impl Simulator {
             if let Some(food) = nearest_food {
                 if let Some(food) = food {
                     let dist = ((cell.x.abs_diff(food.x) + cell.y.abs_diff(food.y)) as f64).sqrt();
-                    if dist < cell.flagellum_size {
+                    if dist < cell.get_eating_distance() {
                         // cell eats the food
                         cell.eat_food();
                         // remove food
