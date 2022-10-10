@@ -6,6 +6,8 @@ pub struct Cell {
     pub x: u32,
     pub y: u32,
     pub radians: f64,
+    pub color: String,
+
     pub size: u32,
     pub display_seed: f64,
     pub flagellum_size: f64,
@@ -32,6 +34,7 @@ impl Cell {
             stomach_size: 10.0,
 
             display_seed: Math::random(),
+            color: format!("rgb({}, {}, {})", 50+random(100), random(100), 100+random(100))
         }
     }
 

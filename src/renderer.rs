@@ -42,9 +42,9 @@ pub fn render_simulator(context: CanvasRenderingContext2d, camera_x: i32, camera
     
     // draw cells
     context.set_stroke_style(&"rgb(100, 255, 255)".into());
-    context.set_line_width(1.5);
+    context.set_line_width(3.0);
     for cell in simulator.get_cells() {
-        context.set_fill_style(&format!("rgb({}, {}, {})", (cell.get_fullness() * 255.0), 0.0, cell.display_seed * 75.0).into());
+        context.set_fill_style(&(&cell.color).into());
         let x = (cell.x as i32 + camera_x) as f64;
         let y = (cell.y as i32 + camera_y) as f64;
         let size = (cell.size) as f64;
@@ -64,8 +64,17 @@ pub fn render_simulator(context: CanvasRenderingContext2d, camera_x: i32, camera
         context.close_path();
         context.restore();
 
-        context.set_stroke_style(&"rgb(50, 200, 255)".into());
+        context.set_stroke_style(&"rgb(0, 0, 0)".into());
+        context.set_line_width(1.0);
+        context.set_fill_style(&format!("rgb({}, {}, {})", (cell.get_fullness() * 255.0), 0.0, 0.0).into());
+        context.begin_path();
+        context.arc(x, y, cell.stomach_size * 1.5, 0.0, 2.0 * 3.14).unwrap();
+        context.fill();
+        context.stroke();
+        context.close_path();
+
         context.set_line_width(3.0);
+        context.set_stroke_style(&"rgb(50, 200, 255)".into());
         context.begin_path();
         let fla_radius = (size / 2.0) * cell.flagellum_size;
         let angle = 3.15f64 * ((cell.display_seed * 360.0 + simulator.get_steps() as f64) * 30.0 % 360.0) / 180.0;
