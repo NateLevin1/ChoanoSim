@@ -32,7 +32,7 @@ function updateTime() {
 }
 
 function init(rustModule) {
-    let canvas = document.getElementById("canvas");
+    const canvas = document.getElementById("canvas");
     context = canvas.getContext("2d");
     rustModule.initialize_canvas(context);
     console.log("Init complete.");
@@ -111,5 +111,13 @@ function init(rustModule) {
         camera.x -= event.deltaX;
         camera.y -= event.deltaY;
         rustModule.render_simulator(context, camera.x, camera.y);
+    };
+    window.onmousemove = (event) => {
+        if (event.buttons === 1 && event.target === canvas) {
+            event.preventDefault();
+            camera.x += event.movementX;
+            camera.y += event.movementY;
+            rustModule.render_simulator(context, camera.x, camera.y);
+        }
     };
 }

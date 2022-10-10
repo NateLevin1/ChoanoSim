@@ -27,6 +27,7 @@
     border: none;
     cursor: pointer;
     transition: all 0.2s;
+    background-color: rgb(239, 239, 239);
 }
 
 .ctrl-button:hover {
