@@ -41,9 +41,15 @@ pub fn render_simulator(context: CanvasRenderingContext2d, camera_x: i32, camera
     }
     
     // draw cells
-    context.set_stroke_style(&"rgb(100, 255, 255)".into());
     context.set_line_width(3.0);
     for cell in simulator.get_cells() {
+        // make sure cell is in bounds, if not skip rendering
+        let cell_camera_dist = cell.size as i32 + 10;
+        if (cell.x as i32 + cell_camera_dist) < -camera_x || (cell.y as i32 + cell_camera_dist) < -camera_y {
+            continue;
+        }
+
+        context.set_stroke_style(&"rgb(100, 220, 255)".into());
         context.set_fill_style(&(&cell.color).into());
         let x = (cell.x as i32 + camera_x) as f64;
         let y = (cell.y as i32 + camera_y) as f64;
