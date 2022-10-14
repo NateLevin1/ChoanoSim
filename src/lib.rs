@@ -2,6 +2,7 @@ mod simulator;
 mod renderer;
 mod cell;
 mod food;
+mod genes;
 
 use wasm_bindgen::prelude::*;
 use web_sys::console;

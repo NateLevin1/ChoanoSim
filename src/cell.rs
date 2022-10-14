@@ -1,6 +1,14 @@
-use js_sys::Math;
+use std::collections::HashMap;
 
-use crate::{simulator::{SimulatorConfig, self}, random};
+use js_sys::Math;
+use web_sys::console;
+
+use crate::{
+    food,
+    genes::Genes,
+    random,
+    simulator::{self, SimulatorConfig},
+};
 
 pub struct Cell {
     pub x: u32,
@@ -8,39 +16,59 @@ pub struct Cell {
     pub radians: f64,
     pub color: String,
 
-    pub size: u32,
-    pub display_seed: f64,
-    pub flagellum_size: f64,
-    pub stomach_size: f64,
+    pub genes: Genes,
+    child_genes: Option<Genes>,
+
     pub alive: bool,
+    pub display_seed: f64,
+    pub reproduction_cooldown: u32,
+    pub remaining_steps_until_child_born: u32,
 
     stomach_amount: f64,
-    rotation_chance: f64
+    rotation_chance: f64,
 }
 
 impl Cell {
-    pub fn new(config: &SimulatorConfig) -> Self {
-        let dist_from_wall = config.food_spacing;
+    pub fn new(genes: Genes, x: u32, y: u32, config: &SimulatorConfig) -> Self {
         Self {
-            x: dist_from_wall / 2 + random(config.width - dist_from_wall),
-            y: dist_from_wall / 2 + random(config.height - dist_from_wall),
+            x,
+            y,
             radians: (random(360) as f64).to_radians(),
             stomach_amount: 5.0,
             rotation_chance: 0.0,
+            remaining_steps_until_child_born: 0,
+            reproduction_cooldown: config.reproduction_cooldown,
             alive: true,
-            
-            size: 30,
-            flagellum_size: 5.0,
-            stomach_size: 10.0,
+
+            genes,
+            child_genes: None,
 
             display_seed: Math::random(),
-            color: format!("rgb({}, {}, {})", 50+random(100), random(100), 100+random(100))
+            color: format!(
+                "rgb({}, {}, {})",
+                50 + random(100),
+                random(100),
+                100 + random(100)
+            ),
         }
     }
 
-    pub fn simulate_step(&mut self, config: &simulator::SimulatorConfig) {
-        // simulate motion
+    pub fn get_random_pos_in_bounds(config: &SimulatorConfig) -> u32 {
+        let dist_from_wall = config.food_spacing;
+        dist_from_wall / 2 + random(config.width - dist_from_wall)
+    }
 
+    pub fn simulate_step(&mut self, config: &SimulatorConfig) -> Option<Cell> {
+        self.simulate_movement(config);
+
+        let possibly_new_child = self.simulate_reproduction(config);
+
+        self.take_food(self.get_energy_usage());
+
+        return possibly_new_child;
+    }
+
+    pub fn simulate_movement(&mut self, config: &SimulatorConfig) {
         // Explanation:
         // 1. calculate the dx and dy, move if won't go out of bounds
         // 2. slightly increase the chance it will turn
@@ -61,7 +89,7 @@ impl Cell {
             // self.rotation_chance += ROTATION_CHANCE_CHANGE_ON_WALL_HIT;
             self.radians += (60.0 + random(70) as f64) * 3.14 / 180.0;
         }
-        
+
         let new_y = self.y as i32 + dy as i32;
         if new_y >= dist_from_wall && new_y < config.height as i32 - dist_from_wall {
             self.y = new_y as u32;
@@ -74,17 +102,100 @@ impl Cell {
             self.radians = (random(360) as f64).to_radians();
             self.rotation_chance = 0.0;
         }
+    }
 
-        self.take_food(self.get_energy_usage());
+    pub fn simulate_reproduction(&mut self, config: &SimulatorConfig) -> Option<Cell> {
+        if self.reproduction_cooldown > 0 {
+            self.reproduction_cooldown -= 1;
+        }
+
+        if self.remaining_steps_until_child_born > 0 {
+            self.remaining_steps_until_child_born -= 1;
+            self.take_food(CHILD_DEVELOPMENT_FOOD_DECREASE);
+            if self.remaining_steps_until_child_born == 0 {
+                return Some(self.reproduce(config));
+            }
+        }
+
+        None
+    }
+
+    pub fn find_food_and_eat(
+        &mut self,
+        all_food: &mut Vec<Vec<Option<food::Food>>>,
+        food_spacing: f64,
+    ) {
+        let x = self.x as f64;
+        let y = self.y as f64;
+        let nearest_food_x = ((x - food_spacing) / food_spacing).round() as usize;
+        let nearest_food_y = ((y - food_spacing) / food_spacing).round() as usize;
+
+        let nearest_food = all_food
+            .get(nearest_food_x)
+            .and_then(|row| row.get(nearest_food_y));
+
+        if let Some(food) = nearest_food {
+            if let Some(food) = food {
+                let dist = ((self.x.abs_diff(food.x) + self.y.abs_diff(food.y)) as f64).sqrt();
+                if dist < self.get_eating_distance() {
+                    // cell eats the food
+                    self.eat_food();
+                    // remove food
+                    all_food.get_mut(nearest_food_x).unwrap()[nearest_food_y] = None;
+                }
+            }
+        }
+    }
+
+    pub fn find_mate_and_reproduce(
+        &mut self,
+        index_to_add: usize,
+        reproduction_locations: &mut HashMap<(u32, u32), usize>,
+        config: &simulator::SimulatorConfig,
+    ) -> Option<usize> {
+        console::log_1(&format!("finding mate...").into());
+        // if recently reproduced, don't try to reproduce again.
+        if self.reproduction_cooldown != 0 {
+            return None;
+        }
+
+        // cell reproduction works by finding all cells within REPRODUCTION_DISTANCE in a hashmap
+        // if a cell tries to insert at an already existing key, it will try to reproduce
+        // with the cell there. After successfully reproducing it will remove the value at that
+        // key so other cells can reproduce in the same area.
+        let box_x = (self.x - REPRODUCTION_DISTANCE) / REPRODUCTION_DISTANCE;
+        let box_y = (self.y - REPRODUCTION_DISTANCE) / REPRODUCTION_DISTANCE;
+        let box_loc = (box_x, box_y);
+        return if let Some(other_cell) = reproduction_locations.get(&box_loc) {
+            console::log_1(&format!("mate found!").into());
+            self.reproduction_cooldown = config.reproduction_cooldown;
+            Some(*other_cell)
+        } else {
+            reproduction_locations.insert(box_loc, index_to_add);
+            None
+        };
     }
 
     pub fn eat_food(&mut self) {
         self.stomach_amount += STOMACH_INCREASE_FROM_FOOD_AMOUNT;
-        
+
         // if more than full, set to max
-        if self.stomach_amount > self.stomach_size {
-            self.stomach_amount = self.stomach_size;
+        if self.stomach_amount > self.genes.stomach_size {
+            self.stomach_amount = self.genes.stomach_size;
         }
+    }
+
+    pub fn start_reproduction(&mut self, other: &Genes, config: &SimulatorConfig) {
+        // this runs when `self` is impregnated
+
+        self.child_genes = Some(self.genes.mix(other, config));
+        self.remaining_steps_until_child_born = self.genes.steps_until_child_born as u32;
+        self.reproduction_cooldown = config.reproduction_cooldown;
+    }
+
+    fn reproduce(&mut self, config: &SimulatorConfig) -> Self {
+        self.take_food(CHILDBIRTH_FOOD_DECREASE);
+        Cell::new(self.child_genes.unwrap(), self.x, self.y, config)
     }
 
     pub fn take_food(&mut self, amount: f64) {
@@ -97,24 +208,23 @@ impl Cell {
     }
 
     pub fn get_fullness(&self) -> f64 {
-        return self.stomach_amount / self.stomach_size;
+        return self.stomach_amount / self.genes.stomach_size;
     }
 
     pub fn get_speed(&self) -> f64 {
-        self.flagellum_size * FLAGELLUM_SPEED_MULTIPLIER
-        + self.stomach_size * STOMACH_SIZE_SPEED_MULTIPLIER
+        self.genes.flagellum_size * FLAGELLUM_SPEED_MULTIPLIER
+            + self.genes.stomach_size * STOMACH_SIZE_SPEED_MULTIPLIER
     }
 
     pub fn get_eating_distance(&self) -> f64 {
-        self.size as f64 * SIZE_EATING_DISTANCE_MULTIPLIER
-        + self.flagellum_size
+        self.genes.size as f64 * SIZE_EATING_DISTANCE_MULTIPLIER + self.genes.flagellum_size
     }
 
     pub fn get_energy_usage(&self) -> f64 {
         STOMACH_DECREASE_FROM_SPEED_AMOUNT * self.get_speed()
-        + STOMACH_DECREASE_FROM_SIZE_AMOUNT * self.size as f64
+            + STOMACH_DECREASE_FROM_SIZE_AMOUNT * self.genes.size as f64
     }
-    
+
     pub fn die(&mut self) {
         self.alive = false;
     }
@@ -130,4 +240,9 @@ const STOMACH_DECREASE_FROM_SIZE_AMOUNT: f64 = 0.0006;
 const FLAGELLUM_SPEED_MULTIPLIER: f64 = 1.5;
 const STOMACH_SIZE_SPEED_MULTIPLIER: f64 = 0.25;
 
-const SIZE_EATING_DISTANCE_MULTIPLIER: f64 = 0.03;
+const SIZE_EATING_DISTANCE_MULTIPLIER: f64 = 0.02;
+
+const REPRODUCTION_DISTANCE: u32 = 50;
+
+const CHILDBIRTH_FOOD_DECREASE: f64 = 1.0;
+const CHILD_DEVELOPMENT_FOOD_DECREASE: f64 = 0.01;
