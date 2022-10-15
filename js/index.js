@@ -42,7 +42,7 @@ function init(rustModule) {
     const step = document.getElementById("step");
     const play = document.getElementById("play");
     const genes = document.getElementById("genes");
-    const inspector = document.getElementById("inspector");
+    const snapshot = document.getElementById("snapshot");
     const reproRadios = Array.from(
         document.querySelectorAll("input[name=reproduction]")
     );
@@ -85,6 +85,9 @@ function init(rustModule) {
         stepMultiplier = Math.pow(stepMultiplierEl.valueAsNumber, 2);
         stepMultiplierLabelEl.textContent = `Step Multiplier: ${stepMultiplier.toLocaleString()}`;
     };
+    snapshot.onclick = () => {
+        download("snapshot.csv", rustModule.get_cells_data_csv());
+    };
 
     // renderer
     window.onkeydown = (event) => {
@@ -120,4 +123,21 @@ function init(rustModule) {
             rustModule.render_simulator(context, camera.x, camera.y);
         }
     };
+}
+
+// from https://stackoverflow.com/a/18197341
+function download(filename, text) {
+    const element = document.createElement("a");
+    element.setAttribute(
+        "href",
+        "data:text/plain;charset=utf-8," + encodeURIComponent(text)
+    );
+    element.setAttribute("download", filename);
+
+    element.style.display = "none";
+    document.body.appendChild(element);
+
+    element.click();
+
+    document.body.removeChild(element);
 }

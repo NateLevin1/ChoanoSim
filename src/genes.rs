@@ -24,9 +24,9 @@ impl Genes {
         let size = pick_with_mutation(self.size, other.size, config);
         return Genes {
             size,
-            // prevent stomach from being over half of size
+            // prevent stomach from being greater than size
             stomach_size: pick_with_mutation(self.stomach_size, other.stomach_size, config)
-                .min(size * 0.5),
+                .min(size),
             flagellum_size: pick_with_mutation(self.flagellum_size, other.flagellum_size, config),
             steps_until_child_born: pick_with_mutation(
                 self.steps_until_child_born,
