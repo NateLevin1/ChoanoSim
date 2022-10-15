@@ -1,7 +1,6 @@
 use std::collections::HashMap;
 
 use js_sys::Math;
-use web_sys::console;
 
 use crate::{
     food,
@@ -153,7 +152,6 @@ impl Cell {
         reproduction_locations: &mut HashMap<(u32, u32), usize>,
         config: &simulator::SimulatorConfig,
     ) -> Option<usize> {
-        console::log_1(&format!("finding mate...").into());
         // if recently reproduced, don't try to reproduce again.
         if self.reproduction_cooldown != 0 {
             return None;
@@ -163,11 +161,10 @@ impl Cell {
         // if a cell tries to insert at an already existing key, it will try to reproduce
         // with the cell there. After successfully reproducing it will remove the value at that
         // key so other cells can reproduce in the same area.
-        let box_x = (self.x - REPRODUCTION_DISTANCE) / REPRODUCTION_DISTANCE;
-        let box_y = (self.y - REPRODUCTION_DISTANCE) / REPRODUCTION_DISTANCE;
-        let box_loc = (box_x, box_y);
+        let box_x = (self.x as i32 - REPRODUCTION_DISTANCE) / REPRODUCTION_DISTANCE;
+        let box_y = (self.y as i32 - REPRODUCTION_DISTANCE) / REPRODUCTION_DISTANCE;
+        let box_loc = (box_x as u32, box_y as u32);
         return if let Some(other_cell) = reproduction_locations.get(&box_loc) {
-            console::log_1(&format!("mate found!").into());
             self.reproduction_cooldown = config.reproduction_cooldown;
             Some(*other_cell)
         } else {
@@ -247,7 +244,7 @@ const STOMACH_SIZE_SPEED_MULTIPLIER: f64 = 0.25;
 
 const SIZE_EATING_DISTANCE_MULTIPLIER: f64 = 0.02;
 
-const REPRODUCTION_DISTANCE: u32 = 50;
+const REPRODUCTION_DISTANCE: i32 = 50;
 
 const CHILDBIRTH_FOOD_DECREASE: f64 = 1.0;
 const CHILD_DEVELOPMENT_FOOD_DECREASE: f64 = 0.01;

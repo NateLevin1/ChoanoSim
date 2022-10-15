@@ -1,6 +1,6 @@
 use js_sys::Math;
 
-use crate::simulator::SimulatorConfig;
+use crate::{random, simulator::SimulatorConfig};
 
 #[derive(Copy, Clone)]
 pub struct Genes {
@@ -14,10 +14,10 @@ pub struct Genes {
 impl Genes {
     pub fn default() -> Self {
         Genes {
-            size: 30.0,
-            stomach_size: 10.0,
-            flagellum_size: 5.0,
-            steps_until_child_born: 200.0,
+            size: 27.0 + random(6) as f64,
+            stomach_size: 9.0 + random(2) as f64,
+            flagellum_size: 4.5 + Math::random(),
+            steps_until_child_born: 195.0 + random(10) as f64,
         }
     }
     pub fn mix(&self, other: &Self, config: &SimulatorConfig) -> Self {

@@ -176,7 +176,7 @@ impl SimulatorConfig {
             food_density: 50,
             width: 800,
             height: 800,
-            cell_number: 2,
+            cell_number: 6,
             food_spacing: 40,
             reproduction_cooldown: 200,
             mutation_chance: 0.01,
