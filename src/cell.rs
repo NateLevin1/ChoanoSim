@@ -113,7 +113,7 @@ impl Cell {
             self.remaining_steps_until_child_born -= 1;
             self.take_food(CHILD_DEVELOPMENT_FOOD_DECREASE);
             if self.remaining_steps_until_child_born == 0 {
-                return Some(self.reproduce(config));
+                return self.reproduce(config);
             }
         }
 
@@ -193,9 +193,14 @@ impl Cell {
         self.reproduction_cooldown = config.reproduction_cooldown;
     }
 
-    fn reproduce(&mut self, config: &SimulatorConfig) -> Self {
+    fn reproduce(&mut self, config: &SimulatorConfig) -> Option<Self> {
         self.take_food(CHILDBIRTH_FOOD_DECREASE);
-        Cell::new(self.child_genes.unwrap(), self.x, self.y, config)
+        // prevent fast reproduction having no downside -- no birth if lower production
+        if Math::random() < 0.18 * self.genes.steps_until_child_born.cbrt() {
+            Some(Cell::new(self.child_genes.unwrap(), self.x, self.y, config))
+        } else {
+            None
+        }
     }
 
     pub fn take_food(&mut self, amount: f64) {
@@ -217,7 +222,7 @@ impl Cell {
     }
 
     pub fn get_eating_distance(&self) -> f64 {
-        self.genes.size as f64 * SIZE_EATING_DISTANCE_MULTIPLIER + self.genes.flagellum_size
+        self.genes.size * SIZE_EATING_DISTANCE_MULTIPLIER + self.genes.flagellum_size
     }
 
     pub fn get_energy_usage(&self) -> f64 {
