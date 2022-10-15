@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>🧫 ChoanoSim 🔬</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <canvas width="1920" height="1080" id="canvas"
+    style="width: 100%; height: 100%; position: fixed; top: 0; left: 0;"></canvas>
+  <script src="index.js"></script>
+  <div id="controls">
+    <button class="ctrl-button" id="step">Step</button>
+    <button class="ctrl-button" id="play">Play</button>
+    <p id="time">Time</p>
+    <div id="genes">
+      Avg. Genes
+      <button id="snapshot">Snapshot</button>
+    </div>
+    <details class="sim-conf">
+      <summary>Configure Simulator</summary>
+      <div class="conf-container">
+        <div>
+          <input type="radio" id="asexual" name="reproduction" value="asexual" checked>
+          <label for="asexual">Asexual Reproduction</label><br>
+          <input type="radio" id="sexual" name="reproduction" value="sexual">
+          <label for="sexual">Sexual Reproduction</label><br>
+          <label for="food-density">Food Density:</label>
+          <select id="food-density">
+            <option value="200">Scarce (every 200s)</option>
+            <option value="150" selected>Present (every 150s)</option>
+            <option value="40">Abundant (every 40s)</option>
+            <option value="1">Infinite (every step)</option>
+          </select>
+        </div>
+
+        <div>
+          <label for="step-multiplier" id="step-multiplier-label">Step Multiplier: 1</label>
+          <input type="range" name="step-multiplier" id="step-multiplier" min="1" max="100" value="1">
+        </div>
+      </div>
+    </details>
+  </div>
+  <script>
+    const canvas = document.getElementById("canvas");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  </script>
+</body>
+
+</html>
