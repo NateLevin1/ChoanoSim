@@ -1,6 +1,8 @@
 # ChoanoSim
 
-Simulating the Evolution of Choanoflagellate-like Unicellular Organisms. Written in Rust.
+Simulating the Evolution of Choanoflagellate-like Unicellular Organisms. Written in Rust, compiled to WASM.
+
+[Click here to try the simulator online!](https://natelev.in/portfolio/ChoanoSim/)
 
 ## How to install
 
