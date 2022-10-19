@@ -38,11 +38,15 @@ function init(rustModule) {
     console.log("Init complete.");
     rustModule.render_simulator(context, camera.x, camera.y);
 
+    // controls
     const controls = document.getElementById("controls");
     const step = document.getElementById("step");
     const play = document.getElementById("play");
-    const genes = document.getElementById("genes");
+    // actions
     const snapshot = document.getElementById("snapshot");
+    const getResults = document.getElementById("get-results");
+    const resultsCover = document.getElementById("results-cover");
+    // config
     const reproRadios = Array.from(
         document.querySelectorAll("input[name=reproduction]")
     );
@@ -87,6 +91,15 @@ function init(rustModule) {
     };
     snapshot.onclick = () => {
         download("snapshot.csv", rustModule.get_cells_data_csv());
+    };
+    getResults.onclick = () => {
+        resultsCover.style.display = "";
+        setTimeout(() => {
+            let results = rustModule.get_results_csv();
+            resultsCover.style.display = "none";
+            rustModule.render_simulator(context, camera.x, camera.y);
+            download("data.csv", results);
+        }, 20);
     };
 
     // renderer

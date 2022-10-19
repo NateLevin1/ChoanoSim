@@ -104,15 +104,79 @@ pub fn get_cells_data_csv() -> String {
         );
     }
 
-    avg_size /= cells.len() as f64;
-    avg_flagellum_size /= cells.len() as f64;
-    avg_stomach_size /= cells.len() as f64;
-    avg_steps_until_child_born /= cells.len() as f64;
+    let cells_len = cells.len() as f64;
+    avg_size /= cells_len;
+    avg_flagellum_size /= cells_len;
+    avg_stomach_size /= cells_len;
+    avg_steps_until_child_born /= cells_len;
 
     result = format!(
         "{}\nAVERAGE,,,{},{},{},{}",
         result, avg_size, avg_flagellum_size, avg_stomach_size, avg_steps_until_child_born
     );
+
+    return result;
+}
+
+#[wasm_bindgen]
+pub fn get_results_csv() -> String {
+    let mut result = format!(
+        "Step #,Population Size,% Food Available,Avg. Size,Avg. Flagellum Size,Avg. Stomach Size,Avg. Gestation Steps"
+    );
+    let mut simulator = get_simulator();
+
+    // loop 1 mil times, separated so we don't save every step just every 1k
+    for i in 0..1_000 {
+        for _ in 0..1_000 {
+            simulator.simulate_step();
+        }
+
+        let population_size = simulator.get_cells().len();
+        let total_food_avail: usize = simulator
+            .get_food()
+            .iter()
+            .map(|food_row| food_row.iter().filter(|food| food.is_some()).count())
+            .sum();
+        let total_food: usize = simulator
+            .get_food()
+            .get(0)
+            .expect("could not get food row 0")
+            .len()
+            * simulator.get_food().len();
+
+        let per_food_avail: f64 = (total_food_avail as f64 / total_food as f64) * 100.0;
+
+        let mut avg_size = 0.0;
+        let mut avg_fla_size = 0.0;
+        let mut avg_sto_size = 0.0;
+        let mut avg_gest_steps = 0.0;
+        for cell in simulator.get_cells() {
+            avg_size += cell.genes.size;
+            avg_fla_size += cell.genes.flagellum_size;
+            avg_sto_size += cell.genes.stomach_size;
+            avg_gest_steps += cell.genes.steps_until_child_born;
+        }
+
+        let cells_len = simulator.get_cells().len() as f64;
+        avg_size /= cells_len;
+        avg_fla_size /= cells_len;
+        avg_sto_size /= cells_len;
+        avg_gest_steps /= cells_len;
+
+        // record data
+        let step = (i + 1) * 1_000;
+        result = format!(
+            "{}\n{},{},{},{},{},{},{}",
+            result,
+            step,
+            population_size,
+            per_food_avail,
+            avg_size,
+            avg_fla_size,
+            avg_sto_size,
+            avg_gest_steps
+        );
+    }
 
     return result;
 }
