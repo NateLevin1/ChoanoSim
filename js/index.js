@@ -34,9 +34,16 @@ function updateTime() {
 function init(rustModule) {
     const canvas = document.getElementById("canvas");
     context = canvas.getContext("2d");
-    rustModule.initialize_canvas(context);
+    const updateCanvasDimensions = () => {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        rustModule.render_simulator(context, camera.x, camera.y);
+    };
+    window.onresize = () => {
+        updateCanvasDimensions();
+    };
+    updateCanvasDimensions();
     console.log("Init complete.");
-    rustModule.render_simulator(context, camera.x, camera.y);
 
     // controls
     const controls = document.getElementById("controls");

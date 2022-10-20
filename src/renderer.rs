@@ -3,12 +3,6 @@ use web_sys::CanvasRenderingContext2d;
 
 use crate::get_simulator;
 
-#[allow(dead_code)]
-#[wasm_bindgen]
-pub fn initialize_canvas(context: CanvasRenderingContext2d) {
-    clear_canvas(&context);
-}
-
 fn clear_canvas(context: &CanvasRenderingContext2d) {
     let canvas = context.canvas().unwrap();
     context.set_fill_style(&"rgb(26, 101, 171)".into());
