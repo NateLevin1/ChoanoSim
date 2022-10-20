@@ -173,7 +173,7 @@ impl SimulatorConfig {
     pub fn new() -> Self {
         Self {
             reproduction: Reproduction::default(),
-            food_density: 50,
+            food_density: 120,
             width: 800,
             height: 800,
             cell_number: 6,
