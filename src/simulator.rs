@@ -158,13 +158,15 @@ impl Simulator {
         let food_spacing = self.config.food_spacing;
         let food_offset = food_spacing;
 
+        let spawn_chance = 1.0 / (self.config.food_density as f64);
+
         for row in 0..width / food_spacing {
             let food_row = self
                 .food
                 .get_mut(row as usize)
                 .expect("food row did not exist");
             for col in 0..height / food_spacing {
-                if food_row[col as usize].is_none() && random() < 0.0043 {
+                if food_row[col as usize].is_none() && random() < spawn_chance {
                     food_row[col as usize] = Some(food::Food::new(
                         row * food_spacing + food_offset,
                         col * food_spacing + food_offset,
@@ -196,7 +198,7 @@ impl SimulatorConfig {
     pub fn new() -> Self {
         Self {
             reproduction: Reproduction::default(),
-            food_density: 120,
+            food_density: 240,
             width: 1_600,
             height: 1_600,
             cell_number: 12,
