@@ -1,3 +1,5 @@
+import GetResultsWorker from "./get_results.worker.js";
+
 // run Rust main
 import("../pkg/index.js").catch(console.error).then(init);
 
@@ -24,11 +26,10 @@ function runStep(rustModule) {
     }
 }
 
+const timer = document.getElementById("time");
 function updateTime() {
     steps += stepMultiplier;
-    document.getElementById(
-        "time"
-    ).textContent = `${steps.toLocaleString()} step${steps > 1 ? "s" : ""}`;
+    timer.textContent = `${steps.toLocaleString()} step${steps > 1 ? "s" : ""}`;
 }
 
 function init(rustModule) {
@@ -53,6 +54,7 @@ function init(rustModule) {
     const snapshot = document.getElementById("snapshot");
     const getResults = document.getElementById("get-results");
     const resultsCover = document.getElementById("results-cover");
+    const resultsPercentage = document.getElementById("percent-complete");
     // config
     const reproRadios = Array.from(
         document.querySelectorAll("input[name=reproduction]")
@@ -101,11 +103,17 @@ function init(rustModule) {
     };
     getResults.onclick = () => {
         resultsCover.style.display = "";
-        setTimeout(() => {
-            let results = rustModule.get_results_csv();
-            resultsCover.style.display = "none";
-            rustModule.render_simulator(context, camera.x, camera.y);
-            download("data.csv", results);
+        setTimeout(async () => {
+            const worker = new GetResultsWorker();
+            worker.onmessage = (msg) => {
+                const { type } = msg.data;
+                if (type === "finished") {
+                    resultsCover.style.display = "none";
+                    download("data.csv", msg.data.results);
+                } else if (type === "update-percent") {
+                    resultsPercentage.textContent = msg.data.percent;
+                }
+            };
         }, 20);
     };
 

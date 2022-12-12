@@ -176,6 +176,19 @@ pub fn get_results_csv() -> String {
             avg_sto_size,
             avg_gest_steps
         );
+
+        // this is an extreme hack but it works
+        let completion_percentage = i as f64 / 10.0;
+        if completion_percentage.fract() == 0.0 {
+            // only update on exact percentages
+            let evaled = js_sys::eval(&String::from(format!(
+                "self.onCompletionPercentChange({});",
+                completion_percentage
+            )));
+            if let Err(err) = evaled {
+                console::error_1(&err);
+            }
+        }
     }
 
     return result;

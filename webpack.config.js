@@ -16,6 +16,14 @@ module.exports = {
   devServer: {
     contentBase: dist,
   },
+  module: {
+    rules: [
+      {
+        test: /\.worker\.js$/,
+        use: { loader: "worker-loader" },
+      },
+    ],
+  },
   plugins: [
     new CopyPlugin([
       path.resolve(__dirname, "static")

@@ -28,12 +28,18 @@ pub struct Cell {
 }
 
 impl Cell {
-    pub fn new(genes: Genes, x: u32, y: u32, config: &SimulatorConfig) -> Self {
+    pub fn new(
+        genes: Genes,
+        x: u32,
+        y: u32,
+        stomach_amount: f64,
+        config: &SimulatorConfig,
+    ) -> Self {
         Self {
             x,
             y,
             radians: (random(360) as f64).to_radians(),
-            stomach_amount: 5.0,
+            stomach_amount,
             rotation_chance: 0.0,
             remaining_steps_until_child_born: 0,
             reproduction_cooldown: config.reproduction_cooldown,
@@ -129,18 +135,34 @@ impl Cell {
         let nearest_food_x = ((x - food_spacing) / food_spacing).round() as usize;
         let nearest_food_y = ((y - food_spacing) / food_spacing).round() as usize;
 
-        let nearest_food = all_food
-            .get(nearest_food_x)
-            .and_then(|row| row.get(nearest_food_y));
+        let possible_eating_radius = 4usize;
 
-        if let Some(food) = nearest_food {
-            if let Some(food) = food {
-                let dist = ((self.x.abs_diff(food.x) + self.y.abs_diff(food.y)) as f64).sqrt();
-                if dist < self.get_eating_distance() {
-                    // cell eats the food
-                    self.eat_food();
-                    // remove food
-                    all_food.get_mut(nearest_food_x).unwrap()[nearest_food_y] = None;
+        'eat_food: for x_offset in 0..possible_eating_radius {
+            for y_offset in 0..possible_eating_radius {
+                let nearest_food_x_offset = (nearest_food_x + x_offset)
+                    .checked_sub(possible_eating_radius / 2)
+                    .unwrap_or(0);
+                let nearest_food_y_offset = (nearest_food_y + y_offset)
+                    .checked_sub(possible_eating_radius / 2)
+                    .unwrap_or(0);
+
+                let nearest_food = all_food
+                    .get(nearest_food_x_offset)
+                    .and_then(|row| row.get(nearest_food_y_offset));
+
+                if let Some(food) = nearest_food {
+                    if let Some(food) = food {
+                        let dist =
+                            ((self.x.abs_diff(food.x) + self.y.abs_diff(food.y)) as f64).sqrt();
+                        if dist < self.get_eating_distance() {
+                            // cell eats the food
+                            self.eat_food();
+                            // remove food
+                            all_food.get_mut(nearest_food_x_offset).unwrap()
+                                [nearest_food_y_offset] = None;
+                            break 'eat_food;
+                        }
+                    }
                 }
             }
         }
@@ -191,10 +213,17 @@ impl Cell {
     }
 
     fn reproduce(&mut self, config: &SimulatorConfig) -> Option<Self> {
-        self.take_food(CHILDBIRTH_FOOD_DECREASE);
+        let half_cur_food = self.stomach_amount / 2.0;
+        self.take_food(half_cur_food);
         // prevent fast reproduction having no downside -- no birth if lower production
         if Math::random() < 0.18 * self.genes.steps_until_child_born.cbrt() {
-            Some(Cell::new(self.child_genes.unwrap(), self.x, self.y, config))
+            Some(Cell::new(
+                self.child_genes.unwrap(),
+                self.x,
+                self.y,
+                half_cur_food,
+                config,
+            ))
         } else {
             None
         }
@@ -215,16 +244,19 @@ impl Cell {
 
     pub fn get_speed(&self) -> f64 {
         self.genes.flagellum_size * FLAGELLUM_SPEED_MULTIPLIER
-            + self.genes.stomach_size * STOMACH_SIZE_SPEED_MULTIPLIER
+            // + self.genes.stomach_size * STOMACH_SIZE_SPEED_MULTIPLIER
+            + self.genes.size.powi(2) * SIZE_SPEED_MULTIPLIER
+            + 5.0
     }
 
     pub fn get_eating_distance(&self) -> f64 {
-        self.genes.size * SIZE_EATING_DISTANCE_MULTIPLIER + self.genes.flagellum_size
+        self.genes.size * SIZE_EATING_DISTANCE_MULTIPLIER
+            + self.genes.flagellum_size * FLAGELLUM_SIZE_EATING_DISTANCE_MULTIPLIER
     }
 
     pub fn get_energy_usage(&self) -> f64 {
-        STOMACH_DECREASE_FROM_SPEED_AMOUNT * self.get_speed()
-            + STOMACH_DECREASE_FROM_SIZE_AMOUNT * self.genes.size as f64
+        STOMACH_DECREASE_FROM_SIZE_AMOUNT * self.genes.size as f64
+            + STOMACH_DECREASE_FROM_FLA_SIZE_AMOUNT * self.genes.flagellum_size.powi(2) as f64
     }
 
     pub fn die(&mut self) {
@@ -236,15 +268,17 @@ const DEFAULT_ROTATION_CHANCE_CHANGE: f64 = 0.0006;
 // const ROTATION_CHANCE_CHANGE_ON_WALL_HIT: f64 = 0.3;
 
 const STOMACH_INCREASE_FROM_FOOD_AMOUNT: f64 = 0.5;
-const STOMACH_DECREASE_FROM_SPEED_AMOUNT: f64 = 0.007;
-const STOMACH_DECREASE_FROM_SIZE_AMOUNT: f64 = 0.0006;
+const STOMACH_DECREASE_FROM_SIZE_AMOUNT: f64 = 0.0026; // 0.018
+const STOMACH_DECREASE_FROM_FLA_SIZE_AMOUNT: f64 = 0.00048;
 
 const FLAGELLUM_SPEED_MULTIPLIER: f64 = 1.5;
-const STOMACH_SIZE_SPEED_MULTIPLIER: f64 = 0.25;
+const SIZE_SPEED_MULTIPLIER: f64 = -0.003;
 
-const SIZE_EATING_DISTANCE_MULTIPLIER: f64 = 0.02;
+// 1.5 * 5 + 10 * 0.25
+
+const SIZE_EATING_DISTANCE_MULTIPLIER: f64 = 0.25;
+const FLAGELLUM_SIZE_EATING_DISTANCE_MULTIPLIER: f64 = 0.3;
 
 const REPRODUCTION_DISTANCE: i32 = 50;
 
-const CHILDBIRTH_FOOD_DECREASE: f64 = 1.0;
 const CHILD_DEVELOPMENT_FOOD_DECREASE: f64 = 0.01;

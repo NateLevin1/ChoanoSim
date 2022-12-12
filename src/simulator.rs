@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use crate::cell;
 use crate::food;
 use crate::genes::Genes;
+use js_sys::Math::random;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -23,6 +24,7 @@ impl Simulator {
                     Genes::default(),
                     cell::Cell::get_random_pos_in_bounds(&config),
                     cell::Cell::get_random_pos_in_bounds(&config),
+                    5.0,
                     &config,
                 )
             })
@@ -42,7 +44,7 @@ impl Simulator {
             config,
             steps: 0,
         };
-        new_self.add_food();
+        new_self.fill_food();
 
         new_self
     }
@@ -65,9 +67,7 @@ impl Simulator {
     pub fn simulate_step(&mut self) {
         self.steps += 1;
 
-        if self.steps % self.config.food_density == 0 {
-            self.add_food();
-        }
+        self.add_food();
 
         let food_spacing = self.config.food_spacing as f64;
 
@@ -131,7 +131,8 @@ impl Simulator {
             i += 1;
         }
     }
-    fn add_food(&mut self) {
+
+    fn fill_food(&mut self) {
         let width = self.config.width;
         let height = self.config.height;
         let food_spacing = self.config.food_spacing;
@@ -147,6 +148,28 @@ impl Simulator {
                     row * food_spacing + food_offset,
                     col * food_spacing + food_offset,
                 ));
+            }
+        }
+    }
+
+    fn add_food(&mut self) {
+        let width = self.config.width;
+        let height = self.config.height;
+        let food_spacing = self.config.food_spacing;
+        let food_offset = food_spacing;
+
+        for row in 0..width / food_spacing {
+            let food_row = self
+                .food
+                .get_mut(row as usize)
+                .expect("food row did not exist");
+            for col in 0..height / food_spacing {
+                if food_row[col as usize].is_none() && random() < 0.0043 {
+                    food_row[col as usize] = Some(food::Food::new(
+                        row * food_spacing + food_offset,
+                        col * food_spacing + food_offset,
+                    ));
+                }
             }
         }
     }
@@ -174,9 +197,9 @@ impl SimulatorConfig {
         Self {
             reproduction: Reproduction::default(),
             food_density: 120,
-            width: 800,
-            height: 800,
-            cell_number: 6,
+            width: 1_600,
+            height: 1_600,
+            cell_number: 12,
             food_spacing: 40,
             reproduction_cooldown: 200,
             mutation_chance: 0.01,
