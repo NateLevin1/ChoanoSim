@@ -10,9 +10,10 @@
 <body>
   <canvas width="1920" height="1080" id="canvas"
     style="width: 100%; height: 100%; position: fixed; top: 0; left: 0;"></canvas>
-  <script src="index.js"></script>
-  <div id="results-cover" style="display: none;">Please wait while the simulation runs 1 million steps. This can take up
-    to a minute.</div>
+  <script src="index.js" async defer></script>
+  <div id="results-cover" style="display: none;">Please wait while the simulation runs 1 million steps.
+    <div><span id="percent-complete">0</span>% Complete</div>
+  </div>
   <div id="controls">
     <button class="ctrl-button button" id="step">Step</button>
     <button class="ctrl-button button" id="play">Play</button>
@@ -31,10 +32,10 @@
           <label for="sexual">Sexual Reproduction</label><br>
           <label for="food-density">Food Density:</label>
           <select id="food-density">
-            <option value="160">Scarce (every 160s)</option>
-            <option value="120" selected>Present (every 120s)</option>
-            <option value="50">Abundant (every 50s)</option>
-            <option value="1">Infinite (every step)</option>
+            <option value="600">Scarce</option>
+            <option value="240" selected>Present</option>
+            <option value="100">Abundant</option>
+            <option value="1">Infinite</option>
           </select>
         </div>
 
