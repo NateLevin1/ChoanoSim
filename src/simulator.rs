@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use crate::cell;
 use crate::food;
 use crate::genes::Genes;
-use js_sys::Math::random;
+use crate::randoms::random_float;
 use wasm_bindgen::prelude::*;
 
 #[wasm_bindgen]
@@ -166,7 +166,7 @@ impl Simulator {
                 .get_mut(row as usize)
                 .expect("food row did not exist");
             for col in 0..height / food_spacing {
-                if food_row[col as usize].is_none() && random() < spawn_chance {
+                if food_row[col as usize].is_none() && random_float() < spawn_chance {
                     food_row[col as usize] = Some(food::Food::new(
                         row * food_spacing + food_offset,
                         col * food_spacing + food_offset,

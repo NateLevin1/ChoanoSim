@@ -1,11 +1,9 @@
 use std::collections::HashMap;
 
-use js_sys::Math;
-
 use crate::{
     food,
     genes::Genes,
-    random,
+    randoms::{random, random_float},
     simulator::{self, SimulatorConfig},
 };
 
@@ -48,7 +46,7 @@ impl Cell {
             genes,
             child_genes: None,
 
-            display_seed: Math::random(),
+            display_seed: random_float(),
             color: format!(
                 "rgb({}, {}, {})",
                 50 + random(100),
@@ -103,7 +101,7 @@ impl Cell {
             self.radians += (60.0 + random(70) as f64) * 3.14 / 180.0;
         }
 
-        if js_sys::Math::random() < self.rotation_chance {
+        if random_float() < self.rotation_chance {
             self.radians = (random(360) as f64).to_radians();
             self.rotation_chance = 0.0;
         }
@@ -216,7 +214,7 @@ impl Cell {
         let half_cur_food = self.stomach_amount / 2.0;
         self.take_food(half_cur_food);
         // prevent fast reproduction having no downside -- no birth if lower production
-        if Math::random() < 0.18 * self.genes.steps_until_child_born.cbrt() {
+        if random_float() < 0.18 * self.genes.steps_until_child_born.cbrt() {
             Some(Cell::new(
                 self.child_genes.unwrap(),
                 self.x,

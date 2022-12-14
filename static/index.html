@@ -11,7 +11,9 @@
   <canvas width="1920" height="1080" id="canvas"
     style="width: 100%; height: 100%; position: fixed; top: 0; left: 0;"></canvas>
   <script src="index.js" async defer></script>
-  <div id="results-cover" style="display: none;">Please wait while the simulation runs 1 million steps.
+  <div id="results-cover" style="display: none;">
+    Please wait while the simulation runs all tests. They will run in
+    parallel, and as they complete, you will be prompted to download a CSV.
     <div><span id="percent-complete">0</span>% Complete</div>
   </div>
   <div id="controls">
@@ -19,7 +21,7 @@
     <button class="ctrl-button button" id="play">Play</button>
     <p id="time">Time</p>
     <div id="actions">
-      <button id="get-results" class="button">Get 1m Results</button>
+      <button id="get-results" class="button">Get Results</button>
       <button id="snapshot" class="button">Take Snapshot</button>
     </div>
     <details class="sim-conf">

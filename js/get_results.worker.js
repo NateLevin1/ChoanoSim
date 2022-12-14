@@ -1,7 +1,5 @@
 self.onmessage = ({
-    reproMethod,
-    beginningFoodDensity,
-    switchedFoodDensity,
+    data: { reproMethod, beginningFoodDensity, switchedFoodDensity },
 }) => {
     // run Rust main
     import("../pkg/index.js").catch(console.error).then(init);

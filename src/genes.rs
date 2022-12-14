@@ -1,6 +1,7 @@
-use js_sys::Math;
-
-use crate::{random, simulator::SimulatorConfig};
+use crate::{
+    randoms::{random, random_float},
+    simulator::SimulatorConfig,
+};
 
 #[derive(Copy, Clone)]
 pub struct Genes {
@@ -16,7 +17,7 @@ impl Genes {
         Genes {
             size: 27.0 + random(6) as f64,
             stomach_size: 9.0 + random(2) as f64,
-            flagellum_size: 4.5 + Math::random(),
+            flagellum_size: 4.5 + random_float(),
             steps_until_child_born: 195.0 + random(10) as f64,
         }
     }
@@ -40,7 +41,7 @@ impl Genes {
 fn pick_with_mutation(a: f64, b: f64, config: &SimulatorConfig) -> f64 {
     let mut chosen = pick(a, b);
 
-    if Math::random() < config.mutation_chance {
+    if random_float() < config.mutation_chance {
         let sign = pick(-1.0, 1.0);
         let max_mutation_amount = ((a + b) / 2.0) * config.mutation_percent_change;
         chosen += sign * max_mutation_amount;
@@ -50,7 +51,7 @@ fn pick_with_mutation(a: f64, b: f64, config: &SimulatorConfig) -> f64 {
 }
 
 fn pick(a: f64, b: f64) -> f64 {
-    if Math::random() > 0.5 {
+    if random_float() > 0.5 {
         a
     } else {
         b

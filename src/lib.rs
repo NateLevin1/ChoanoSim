@@ -1,6 +1,7 @@
 mod cell;
 mod food;
 mod genes;
+mod randoms;
 mod renderer;
 mod simulator;
 
@@ -119,14 +120,29 @@ pub fn get_cells_data_csv() -> String {
 }
 
 #[wasm_bindgen]
-pub fn get_results_csv() -> String {
+pub fn get_results_csv(
+    repro_method: &str,
+    beginning_food_density: u32,
+    switched_food_density: u32,
+) -> String {
+    // setup simulator with provided config
+    let mut simulator = simulator::Simulator::new();
+    simulator.get_config_mut().reproduction = if repro_method == "asexual" {
+        simulator::Reproduction::Asexual
+    } else {
+        simulator::Reproduction::Sexual
+    };
+    simulator.get_config_mut().food_density = beginning_food_density;
+
     let mut result = format!(
         "Step #,Population Size,% Food Available,Avg. Size,Avg. Flagellum Size,Avg. Stomach Size,Avg. Gestation Steps"
     );
-    let mut simulator = get_simulator();
 
     // loop 1 mil times, separated so we don't save every step just every 1k
     for i in 0..1_000 {
+        if i == 500 {
+            simulator.get_config_mut().food_density = switched_food_density;
+        }
         for _ in 0..1_000 {
             simulator.simulate_step();
         }
@@ -192,8 +208,4 @@ pub fn get_results_csv() -> String {
     }
 
     return result;
-}
-
-pub fn random(max: u32) -> u32 {
-    (js_sys::Math::random() * max as f64) as u32
 }

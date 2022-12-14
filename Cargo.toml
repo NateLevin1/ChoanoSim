@@ -33,6 +33,10 @@ wee_alloc = { version = "0.4.2", optional = true }
 once_cell = "1.15.0"
 js-sys = "0.3.60"
 
+getrandom = { features = ["js"] }
+rand = {version = "0.8.5"}
+rand_xoshiro = "0.6.0"
+
 # The `web-sys` crate allows you to interact with the various browser APIs,
 # like the DOM.
 [dependencies.web-sys]
