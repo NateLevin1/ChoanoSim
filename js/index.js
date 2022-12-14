@@ -104,16 +104,54 @@ function init(rustModule) {
     getResults.onclick = () => {
         resultsCover.style.display = "";
         setTimeout(async () => {
-            const worker = new GetResultsWorker();
-            worker.onmessage = (msg) => {
-                const { type } = msg.data;
-                if (type === "finished") {
-                    resultsCover.style.display = "none";
-                    download("data.csv", msg.data.results);
-                } else if (type === "update-percent") {
-                    resultsPercentage.textContent = msg.data.percent;
-                }
-            };
+            const workerConfigurations = [
+                {
+                    reproMethod: "asexual",
+                    beginningFoodDensity: 240,
+                    switchedFoodDensity: 600,
+                },
+                {
+                    reproMethod: "sexual",
+                    beginningFoodDensity: 240,
+                    switchedFoodDensity: 600,
+                },
+                {
+                    reproMethod: "asexual",
+                    beginningFoodDensity: 240,
+                    switchedFoodDensity: 240,
+                },
+                {
+                    reproMethod: "sexual",
+                    beginningFoodDensity: 240,
+                    switchedFoodDensity: 240,
+                },
+                {
+                    reproMethod: "asexual",
+                    beginningFoodDensity: 240,
+                    switchedFoodDensity: 100,
+                },
+                {
+                    reproMethod: "sexual",
+                    beginningFoodDensity: 240,
+                    switchedFoodDensity: 100,
+                },
+            ];
+            for (const config of workerConfigurations) {
+                const worker = new GetResultsWorker();
+                worker.onmessage = (msg) => {
+                    const { type } = msg.data;
+                    if (type === "finished") {
+                        resultsCover.style.display = "none";
+                        download(
+                            `ChoanoSimData-${config.reproMethod}-${config.beginningFoodDensity}-${config.switchedFoodDensity}.csv`,
+                            msg.data.results
+                        );
+                    } else if (type === "update-percent") {
+                        resultsPercentage.textContent = msg.data.percent;
+                    }
+                };
+                worker.postMessage(config);
+            }
         }, 20);
     };
 
