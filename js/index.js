@@ -54,7 +54,9 @@ function init(rustModule) {
     const snapshot = document.getElementById("snapshot");
     const getResults = document.getElementById("get-results");
     const resultsCover = document.getElementById("results-cover");
-    const resultsPercentage = document.getElementById("percent-complete");
+    const completionPercentages = document.getElementById(
+        "completion-percentages"
+    );
     // config
     const reproRadios = Array.from(
         document.querySelectorAll("input[name=reproduction]")
@@ -137,18 +139,26 @@ function init(rustModule) {
                 },
             ];
             for (const config of workerConfigurations) {
+                const resultsPercentageContainer =
+                    document.createElement("div");
+                const resultsPercentage = document.createElement("span");
+                resultsPercentageContainer.appendChild(resultsPercentage);
+                completionPercentages.appendChild(resultsPercentageContainer);
+                const optionsStr = `${config.reproMethod}-${config.beginningFoodDensity}-${config.switchedFoodDensity}`;
                 const worker = new GetResultsWorker();
                 worker.onmessage = (msg) => {
                     const { type } = msg.data;
+                    let percent;
                     if (type === "finished") {
-                        resultsCover.style.display = "none";
                         download(
-                            `ChoanoSimData-${config.reproMethod}-${config.beginningFoodDensity}-${config.switchedFoodDensity}.csv`,
+                            `ChoanoSimData-${optionsStr}.csv`,
                             msg.data.results
                         );
+                        percent = 100;
                     } else if (type === "update-percent") {
-                        resultsPercentage.textContent = msg.data.percent;
+                        percent = msg.data.percent;
                     }
+                    resultsPercentage.textContent = `${optionsStr}: ${percent}% complete`;
                 };
                 worker.postMessage(config);
             }
