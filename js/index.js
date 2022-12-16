@@ -112,31 +112,31 @@ function init(rustModule) {
                     beginningFoodDensity: 240,
                     switchedFoodDensity: 600,
                 },
-                {
-                    reproMethod: "sexual",
-                    beginningFoodDensity: 240,
-                    switchedFoodDensity: 600,
-                },
-                {
-                    reproMethod: "asexual",
-                    beginningFoodDensity: 240,
-                    switchedFoodDensity: 240,
-                },
-                {
-                    reproMethod: "sexual",
-                    beginningFoodDensity: 240,
-                    switchedFoodDensity: 240,
-                },
-                {
-                    reproMethod: "asexual",
-                    beginningFoodDensity: 240,
-                    switchedFoodDensity: 100,
-                },
-                {
-                    reproMethod: "sexual",
-                    beginningFoodDensity: 240,
-                    switchedFoodDensity: 100,
-                },
+                // {
+                //     reproMethod: "sexual",
+                //     beginningFoodDensity: 240,
+                //     switchedFoodDensity: 600,
+                // },
+                // {
+                //     reproMethod: "asexual",
+                //     beginningFoodDensity: 240,
+                //     switchedFoodDensity: 240,
+                // },
+                // {
+                //     reproMethod: "sexual",
+                //     beginningFoodDensity: 240,
+                //     switchedFoodDensity: 240,
+                // },
+                // {
+                //     reproMethod: "asexual",
+                //     beginningFoodDensity: 240,
+                //     switchedFoodDensity: 100,
+                // },
+                // {
+                //     reproMethod: "sexual",
+                //     beginningFoodDensity: 240,
+                //     switchedFoodDensity: 100,
+                // },
             ];
             for (const config of workerConfigurations) {
                 const resultsPercentageContainer =

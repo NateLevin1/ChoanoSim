@@ -120,6 +120,7 @@ pub fn get_cells_data_csv() -> String {
     return result;
 }
 
+const NUM_SIMULATIONS: usize = 10;
 #[wasm_bindgen]
 pub fn get_results_csv(
     repro_method: &str,
@@ -132,8 +133,14 @@ pub fn get_results_csv(
     } else {
         simulator::Reproduction::Sexual
     };
-    let mut simulator = simulator::Simulator::new(repro_method);
-    simulator.get_config_mut().food_density = beginning_food_density;
+    let mut simulators: Vec<simulator::Simulator> = vec![(); NUM_SIMULATIONS]
+        .iter()
+        .map(|_| {
+            let mut simulator = simulator::Simulator::new(repro_method);
+            simulator.get_config_mut().food_density = beginning_food_density;
+            simulator
+        })
+        .collect();
 
     let mut result = format!(
         "Step #,Population Size,% Food Available,Avg. Size,Avg. Flagellum Size,Avg. Stomach Size,Avg. Gestation Steps"
@@ -141,44 +148,69 @@ pub fn get_results_csv(
 
     // loop 1 mil times, separated so we don't save every step just every 1k
     for i in 0..1_000 {
-        if i == 500 {
-            simulator.get_config_mut().food_density = switched_food_density;
+        let mut all_sims_avg_population_size = 0.0;
+        let mut all_sims_avg_per_food_avail = 0.0;
+        let mut all_sims_avg_size = 0.0;
+        let mut all_sims_avg_fla_size = 0.0;
+        let mut all_sims_avg_sto_size = 0.0;
+        let mut all_sims_avg_gest_steps = 0.0;
+
+        for simulator in simulators.iter_mut() {
+            if i == 500 {
+                simulator.get_config_mut().food_density = switched_food_density;
+            }
+            for _ in 0..1_000 {
+                simulator.simulate_step();
+            }
+
+            let population_size: usize = simulator.get_cells().len();
+            let total_food_avail: usize = simulator
+                .get_food()
+                .iter()
+                .map(|food_row| food_row.iter().filter(|food| food.is_some()).count())
+                .sum();
+            let total_food: usize = simulator
+                .get_food()
+                .get(0)
+                .expect("could not get food row 0")
+                .len()
+                * simulator.get_food().len();
+
+            let per_food_avail = (total_food_avail as f64 / total_food as f64) * 100.0;
+
+            // calculate averages for this simulation
+            let mut avg_size = 0.0;
+            let mut avg_fla_size = 0.0;
+            let mut avg_sto_size = 0.0;
+            let mut avg_gest_steps = 0.0;
+            for cell in simulator.get_cells() {
+                avg_size += cell.genes.size;
+                avg_fla_size += cell.genes.flagellum_size;
+                avg_sto_size += cell.genes.stomach_size;
+                avg_gest_steps += cell.genes.steps_until_child_born;
+            }
+
+            let cells_len = simulator.get_cells().len() as f64;
+            avg_size /= cells_len;
+            avg_fla_size /= cells_len;
+            avg_sto_size /= cells_len;
+            avg_gest_steps /= cells_len;
+
+            // add this simulation's averages to the total averages
+            all_sims_avg_population_size += population_size as f64;
+            all_sims_avg_per_food_avail += per_food_avail;
+            all_sims_avg_size += avg_size;
+            all_sims_avg_fla_size += avg_fla_size;
+            all_sims_avg_sto_size += avg_sto_size;
+            all_sims_avg_gest_steps += avg_gest_steps;
         }
-        for _ in 0..1_000 {
-            simulator.simulate_step();
-        }
 
-        let population_size = simulator.get_cells().len();
-        let total_food_avail: usize = simulator
-            .get_food()
-            .iter()
-            .map(|food_row| food_row.iter().filter(|food| food.is_some()).count())
-            .sum();
-        let total_food: usize = simulator
-            .get_food()
-            .get(0)
-            .expect("could not get food row 0")
-            .len()
-            * simulator.get_food().len();
-
-        let per_food_avail: f64 = (total_food_avail as f64 / total_food as f64) * 100.0;
-
-        let mut avg_size = 0.0;
-        let mut avg_fla_size = 0.0;
-        let mut avg_sto_size = 0.0;
-        let mut avg_gest_steps = 0.0;
-        for cell in simulator.get_cells() {
-            avg_size += cell.genes.size;
-            avg_fla_size += cell.genes.flagellum_size;
-            avg_sto_size += cell.genes.stomach_size;
-            avg_gest_steps += cell.genes.steps_until_child_born;
-        }
-
-        let cells_len = simulator.get_cells().len() as f64;
-        avg_size /= cells_len;
-        avg_fla_size /= cells_len;
-        avg_sto_size /= cells_len;
-        avg_gest_steps /= cells_len;
+        all_sims_avg_population_size /= NUM_SIMULATIONS as f64;
+        all_sims_avg_per_food_avail /= NUM_SIMULATIONS as f64;
+        all_sims_avg_size /= NUM_SIMULATIONS as f64;
+        all_sims_avg_fla_size /= NUM_SIMULATIONS as f64;
+        all_sims_avg_sto_size /= NUM_SIMULATIONS as f64;
+        all_sims_avg_gest_steps /= NUM_SIMULATIONS as f64;
 
         // record data
         let step = (i + 1) * 1_000;
@@ -186,12 +218,12 @@ pub fn get_results_csv(
             "{}\n{},{},{},{},{},{},{}",
             result,
             step,
-            population_size,
-            per_food_avail,
-            avg_size,
-            avg_fla_size,
-            avg_sto_size,
-            avg_gest_steps
+            all_sims_avg_population_size,
+            all_sims_avg_per_food_avail,
+            all_sims_avg_size,
+            all_sims_avg_fla_size,
+            all_sims_avg_sto_size,
+            all_sims_avg_gest_steps
         );
 
         // this is an extreme hack but it works
