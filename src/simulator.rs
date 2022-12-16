@@ -15,13 +15,13 @@ pub struct Simulator {
 }
 
 impl Simulator {
-    pub fn new() -> Self {
-        let config = SimulatorConfig::new();
+    pub fn new(repro_method: Reproduction) -> Self {
+        let config = SimulatorConfig::new(repro_method);
 
         let cells = (0..config.cell_number)
             .map(|_| {
                 cell::Cell::new(
-                    Genes::default(),
+                    Genes::new(repro_method),
                     cell::Cell::get_random_pos_in_bounds(&config),
                     cell::Cell::get_random_pos_in_bounds(&config),
                     5.0,
@@ -195,13 +195,13 @@ pub struct SimulatorConfig {
 }
 
 impl SimulatorConfig {
-    pub fn new() -> Self {
+    pub fn new(repro_method: Reproduction) -> Self {
         Self {
-            reproduction: Reproduction::default(),
+            reproduction: repro_method,
             food_density: 240,
-            width: 1_600,
-            height: 1_600,
-            cell_number: 12,
+            width: 5_000,
+            height: 5_000,
+            cell_number: 50,
             food_spacing: 40,
             reproduction_cooldown: 200,
             mutation_chance: 0.01,

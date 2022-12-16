@@ -150,10 +150,27 @@ function init(rustModule) {
                     const { type } = msg.data;
                     let percent;
                     if (type === "finished") {
-                        download(
-                            `ChoanoSimData-${optionsStr}.csv`,
-                            msg.data.results
-                        );
+                        const downloadData = () => {
+                            download(
+                                `ChoanoSimData-${optionsStr}.csv`,
+                                msg.data.results
+                            );
+                        };
+                        // if we currently have focus, just download now
+                        // otherwise wait for focus and download then!
+                        if (document.hasFocus()) {
+                            downloadData();
+                        } else {
+                            window.addEventListener(
+                                "focus",
+                                () => {
+                                    setTimeout(() => {
+                                        downloadData();
+                                    }, 250);
+                                },
+                                { once: true }
+                            );
+                        }
                         percent = 100;
                     } else if (type === "update-percent") {
                         percent = msg.data.percent;

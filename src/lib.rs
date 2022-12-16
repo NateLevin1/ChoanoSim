@@ -6,6 +6,7 @@ mod renderer;
 mod simulator;
 
 use once_cell::sync::Lazy;
+use simulator::Reproduction;
 use std::sync::{Mutex, MutexGuard};
 use wasm_bindgen::prelude::*;
 use web_sys::console;
@@ -33,7 +34,7 @@ pub fn main_js() -> Result<(), JsValue> {
 }
 
 static SIMULATOR: Lazy<Mutex<simulator::Simulator>> =
-    Lazy::new(|| Mutex::new(simulator::Simulator::new()));
+    Lazy::new(|| Mutex::new(simulator::Simulator::new(Reproduction::Asexual)));
 fn get_simulator() -> MutexGuard<'static, simulator::Simulator> {
     SIMULATOR.lock().unwrap()
 }
@@ -126,12 +127,12 @@ pub fn get_results_csv(
     switched_food_density: u32,
 ) -> String {
     // setup simulator with provided config
-    let mut simulator = simulator::Simulator::new();
-    simulator.get_config_mut().reproduction = if repro_method == "asexual" {
+    let repro_method = if repro_method == "asexual" {
         simulator::Reproduction::Asexual
     } else {
         simulator::Reproduction::Sexual
     };
+    let mut simulator = simulator::Simulator::new(repro_method);
     simulator.get_config_mut().food_density = beginning_food_density;
 
     let mut result = format!(

@@ -1,6 +1,6 @@
 use crate::{
     randoms::{random, random_float},
-    simulator::SimulatorConfig,
+    simulator::{Reproduction, SimulatorConfig},
 };
 
 #[derive(Copy, Clone)]
@@ -13,12 +13,32 @@ pub struct Genes {
 }
 
 impl Genes {
-    pub fn default() -> Self {
+    pub fn new(repro_method: Reproduction) -> Self {
+        let is_asexual = match repro_method {
+            Reproduction::Asexual => true,
+            _ => false,
+        };
         Genes {
-            size: 27.0 + random(6) as f64,
-            stomach_size: 9.0 + random(2) as f64,
-            flagellum_size: 4.5 + random_float(),
-            steps_until_child_born: 195.0 + random(10) as f64,
+            size: if is_asexual {
+                30.0
+            } else {
+                27.0 + random(6) as f64
+            },
+            stomach_size: if is_asexual {
+                10.0
+            } else {
+                9.0 + random(2) as f64
+            },
+            flagellum_size: if is_asexual {
+                5.0
+            } else {
+                4.5 + random_float()
+            },
+            steps_until_child_born: if is_asexual {
+                200.0
+            } else {
+                195.0 + random(10) as f64
+            },
         }
     }
     pub fn mix(&self, other: &Self, config: &SimulatorConfig) -> Self {
